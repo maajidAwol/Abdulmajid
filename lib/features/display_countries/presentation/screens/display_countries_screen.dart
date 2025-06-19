@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/injection/injection_container.dart' as di;
+import '../../../../core/theme/app_theme.dart';
 import '../bloc/countries_bloc.dart';
 import '../widgets/country_card.dart';
 import '../widgets/search_widget.dart';
@@ -37,7 +38,7 @@ class _DisplayCountriesViewState extends State<DisplayCountriesView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFFAFAFA),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
         child: Column(
           children: [
@@ -52,7 +53,6 @@ class _DisplayCountriesViewState extends State<DisplayCountriesView> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        
                         const Text(
                           'Countries',
                           style: TextStyle(

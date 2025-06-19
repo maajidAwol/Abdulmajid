@@ -21,7 +21,8 @@ class FavoriteCountryModel extends FavoriteCountry {
           CountryModel(
             name: country.name,
             population: country.population,
-            flag: country.flag,
+            flagUrl: country.flagUrl,
+            flagEmoji: country.flagEmoji,
             area: country.area,
             region: country.region,
             subregion: country.subregion,

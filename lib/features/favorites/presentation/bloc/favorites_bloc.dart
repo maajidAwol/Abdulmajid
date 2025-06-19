@@ -55,9 +55,6 @@ class FavoritesBloc extends Bloc<FavoritesEvent, FavoritesState> {
           isFavorite: isFavorite,
         ),
       );
-
-      // Reload favorites list to update the favorites screen
-      add(GetFavoritesEvent());
     });
   }
 

@@ -23,13 +23,13 @@ class FavoritesView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFFAFAFA),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
         child: Column(
           children: [
             // Header Section
             Container(
-              color: Colors.white,
+              color: Theme.of(context).appBarTheme.backgroundColor,
               child: Column(
                 children: [
                   // Title
@@ -38,7 +38,6 @@ class FavoritesView extends StatelessWidget {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        
                         const Text(
                           'Favorites',
                           style: TextStyle(
@@ -99,9 +98,22 @@ class FavoritesView extends StatelessWidget {
 
             // Favorites List
             Expanded(
-              child: BlocBuilder<FavoritesBloc, FavoritesState>(
+              child: BlocConsumer<FavoritesBloc, FavoritesState>(
+                listener: (context, state) {
+                  if (state is FavoriteStatusLoaded) {
+                    // Reload favorites when a favorite status changes
+                    context.read<FavoritesBloc>().add(GetFavoritesEvent());
+                  }
+                },
+                buildWhen: (previous, current) {
+                  // Only rebuild for states that affect the UI list
+                  return current is FavoritesLoading ||
+                      current is FavoritesLoaded ||
+                      current is FavoritesError ||
+                      current is FavoritesInitial;
+                },
                 builder: (context, state) {
-                  if (state is FavoritesLoading) {
+                  if (state is FavoritesLoading || state is FavoritesInitial) {
                     return const Center(
                       child: CircularProgressIndicator(
                         valueColor: AlwaysStoppedAnimation<Color>(
@@ -146,7 +158,7 @@ class FavoritesView extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
       child: Material(
-        color: Colors.white,
+        color: Theme.of(context).cardTheme.color,
         borderRadius: BorderRadius.circular(16),
         elevation: 2,
         shadowColor: Colors.black.withOpacity(0.1),
@@ -195,10 +207,10 @@ class FavoritesView extends StatelessWidget {
                     children: [
                       Text(
                         favorite.country.name,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 17,
                           fontWeight: FontWeight.w600,
-                          color: Color(0xFF1A1A1A),
+                          color: Theme.of(context).textTheme.titleLarge?.color,
                           height: 1.2,
                         ),
                         maxLines: 1,
@@ -252,6 +264,46 @@ class FavoritesView extends StatelessWidget {
   }
 
   Widget _buildFlag(country) {
+    // Use real flag image with emoji fallback
+    if (country.flagUrl.isNotEmpty) {
+      return Image.network(
+        country.flagUrl,
+        width: 64,
+        height: 44,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) {
+          // Fallback to emoji if image fails to load
+          return _buildEmojiFlag(country);
+        },
+        loadingBuilder: (context, child, loadingProgress) {
+          if (loadingProgress == null) return child;
+          return Container(
+            width: 64,
+            height: 44,
+            decoration: BoxDecoration(
+              color: Colors.grey[200],
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Center(
+              child: SizedBox(
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  valueColor: AlwaysStoppedAnimation<Color>(Colors.grey[400]!),
+                ),
+              ),
+            ),
+          );
+        },
+      );
+    } else {
+      // Fallback to emoji flag
+      return _buildEmojiFlag(country);
+    }
+  }
+
+  Widget _buildEmojiFlag(country) {
     // Create a gradient flag placeholder that looks more realistic
     final hash = country.name.hashCode;
     final colors = [
@@ -279,7 +331,7 @@ class FavoritesView extends StatelessWidget {
       ),
       child: Center(
         child: Text(
-          country.flag,
+          country.flagEmoji,
           style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w500),
         ),
       ),
@@ -540,6 +592,18 @@ class FavoritesView extends StatelessWidget {
                 Navigator.of(dialogContext).pop();
                 context.read<FavoritesBloc>().add(
                   ToggleFavoriteEvent(favorite.country),
+                );
+
+                // Show feedback
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      '${favorite.country.name} removed from favorites',
+                    ),
+                    duration: const Duration(seconds: 2),
+                    behavior: SnackBarBehavior.floating,
+                    backgroundColor: Colors.grey[600],
+                  ),
                 );
               },
               child: const Text(

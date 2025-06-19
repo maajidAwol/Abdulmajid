@@ -17,24 +17,18 @@ class CountryCard extends StatefulWidget {
 }
 
 class _CountryCardState extends State<CountryCard> {
-  late FavoritesBloc _favoritesBloc;
   bool _isFavorite = false;
 
   @override
   void initState() {
     super.initState();
-    _favoritesBloc = di.sl<FavoritesBloc>();
     _checkFavoriteStatus();
   }
 
-  @override
-  void dispose() {
-    _favoritesBloc.close();
-    super.dispose();
-  }
-
   void _checkFavoriteStatus() {
-    _favoritesBloc.add(CheckFavoriteStatusEvent(widget.country.name));
+    context.read<FavoritesBloc>().add(
+      CheckFavoriteStatusEvent(widget.country.name),
+    );
   }
 
   void _toggleFavorite() {
@@ -42,7 +36,7 @@ class _CountryCardState extends State<CountryCard> {
       _isFavorite = !_isFavorite;
     });
 
-    _favoritesBloc.add(ToggleFavoriteEvent(widget.country));
+    context.read<FavoritesBloc>().add(ToggleFavoriteEvent(widget.country));
 
     // Show snackbar feedback
     ScaffoldMessenger.of(context).showSnackBar(
@@ -60,7 +54,6 @@ class _CountryCardState extends State<CountryCard> {
   @override
   Widget build(BuildContext context) {
     return BlocListener<FavoritesBloc, FavoritesState>(
-      bloc: _favoritesBloc,
       listener: (context, state) {
         if (state is FavoriteStatusLoaded &&
             state.countryName == widget.country.name) {
@@ -72,7 +65,7 @@ class _CountryCardState extends State<CountryCard> {
       child: Container(
         margin: const EdgeInsets.only(bottom: 8),
         child: Material(
-          color: Colors.white,
+          color: Theme.of(context).cardTheme.color,
           borderRadius: BorderRadius.circular(16),
           elevation: 2,
           shadowColor: Colors.black.withOpacity(0.1),
@@ -124,10 +117,11 @@ class _CountryCardState extends State<CountryCard> {
                       children: [
                         Text(
                           widget.country.name,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 17,
                             fontWeight: FontWeight.w600,
-                            color: Color(0xFF1A1A1A),
+                            color:
+                                Theme.of(context).textTheme.titleLarge?.color,
                             height: 1.2,
                           ),
                           maxLines: 1,
@@ -185,7 +179,46 @@ class _CountryCardState extends State<CountryCard> {
   }
 
   Widget _buildFlag() {
-    // Create a gradient flag placeholder that looks more realistic
+    // Use real flag image with emoji fallback
+    if (widget.country.flagUrl.isNotEmpty) {
+      return Image.network(
+        widget.country.flagUrl,
+        width: 64,
+        height: 44,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) {
+          // Fallback to emoji if image fails to load
+          return _buildEmojiFlag();
+        },
+        loadingBuilder: (context, child, loadingProgress) {
+          if (loadingProgress == null) return child;
+          return Container(
+            width: 64,
+            height: 44,
+            decoration: BoxDecoration(
+              color: Colors.grey[200],
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Center(
+              child: SizedBox(
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  valueColor: AlwaysStoppedAnimation<Color>(Colors.grey[400]!),
+                ),
+              ),
+            ),
+          );
+        },
+      );
+    } else {
+      // Fallback to emoji flag
+      return _buildEmojiFlag();
+    }
+  }
+
+  Widget _buildEmojiFlag() {
     return Container(
       width: 64,
       height: 44,
@@ -196,7 +229,7 @@ class _CountryCardState extends State<CountryCard> {
       ),
       child: Center(
         child: Text(
-          widget.country.flag,
+          widget.country.flagEmoji,
           style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w500),
         ),
       ),

@@ -3,7 +3,8 @@ import 'package:equatable/equatable.dart';
 class CountryEntity extends Equatable {
   final String name;
   final int population;
-  final String flag;
+  final String flagUrl;
+  final String flagEmoji;
   final double area;
   final String region;
   final String subregion;
@@ -12,7 +13,8 @@ class CountryEntity extends Equatable {
   const CountryEntity({
     required this.name,
     required this.population,
-    required this.flag,
+    required this.flagUrl,
+    required this.flagEmoji,
     required this.area,
     required this.region,
     required this.subregion,
@@ -23,7 +25,8 @@ class CountryEntity extends Equatable {
   List<Object> get props => [
     name,
     population,
-    flag,
+    flagUrl,
+    flagEmoji,
     area,
     region,
     subregion,

@@ -18,54 +18,62 @@ class CountryDetailsScreen extends StatelessWidget {
               di.sl<FavoritesBloc>()
                 ..add(CheckFavoriteStatusEvent(country.name)),
       child: Scaffold(
-        backgroundColor: Colors.grey[50],
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         body: CustomScrollView(
           slivers: [
-            // App Bar with Flag
+            // App Bar with Flag and Title
             SliverAppBar(
-              expandedHeight: 200,
+              expandedHeight: 280,
               pinned: true,
-              backgroundColor: Colors.white,
-              foregroundColor: Colors.black87,
+              backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
+              foregroundColor: Theme.of(context).appBarTheme.foregroundColor,
+              title: Text(
+                country.name,
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.black87,
+                ),
+              ),
               flexibleSpace: FlexibleSpaceBar(
                 background: Container(
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
-                      colors: [Colors.blue.shade50, Colors.white],
+                      colors: [
+                        const Color(0xFF00BCD4).withOpacity(0.1),
+                        Colors.white,
+                      ],
                     ),
                   ),
-                  child: Center(
-                    child: Hero(
-                      tag: 'flag_${country.name}',
-                      child: Container(
-                        width: 120,
-                        height: 120,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(16),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.1),
-                              blurRadius: 10,
-                              offset: const Offset(0, 4),
-                            ),
-                          ],
-                        ),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(16),
-                          child: Container(
-                            color: Colors.grey[200],
-                            child: Center(
-                              child: Text(
-                                country.flag,
-                                style: const TextStyle(fontSize: 60),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const SizedBox(height: 60), // Space for app bar
+                      // Large Flag
+                      Hero(
+                        tag: 'flag_${country.name}',
+                        child: Container(
+                          width: 200,
+                          height: 140,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(16),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.2),
+                                blurRadius: 20,
+                                offset: const Offset(0, 8),
                               ),
-                            ),
+                            ],
+                          ),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(16),
+                            child: _buildDetailFlag(),
                           ),
                         ),
                       ),
-                    ),
+                    ],
                   ),
                 ),
               ),
@@ -78,21 +86,6 @@ class CountryDetailsScreen extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Country Name
-                    Center(
-                      child: Text(
-                        country.name,
-                        style: const TextStyle(
-                          fontSize: 28,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black87,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                    ),
-
-                    const SizedBox(height: 32),
-
                     // Information Cards
                     _buildInfoSection('Basic Information', [
                       _buildInfoCard(
@@ -363,5 +356,66 @@ class CountryDetailsScreen extends StatelessWidget {
       return '${(area / 1000).toStringAsFixed(1)}K';
     }
     return area.toStringAsFixed(0);
+  }
+
+  Widget _buildDetailFlag() {
+    // Use real flag image with emoji fallback for details screen
+    if (country.flagUrl.isNotEmpty) {
+      return Image.network(
+        country.flagUrl,
+        width: 200,
+        height: 140,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) {
+          // Fallback to emoji if image fails to load
+          return _buildDetailEmojiFlag();
+        },
+        loadingBuilder: (context, child, loadingProgress) {
+          if (loadingProgress == null) return child;
+          return Container(
+            width: 200,
+            height: 140,
+            decoration: BoxDecoration(
+              color: Colors.grey[200],
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Center(
+              child: SizedBox(
+                width: 40,
+                height: 40,
+                child: CircularProgressIndicator(
+                  strokeWidth: 4,
+                  valueColor: AlwaysStoppedAnimation<Color>(Colors.grey[400]!),
+                ),
+              ),
+            ),
+          );
+        },
+      );
+    } else {
+      // Fallback to emoji flag
+      return _buildDetailEmojiFlag();
+    }
+  }
+
+  Widget _buildDetailEmojiFlag() {
+    return Container(
+      width: 200,
+      height: 140,
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            const Color(0xFF00BCD4).withOpacity(0.2),
+            const Color(0xFF00BCD4).withOpacity(0.1),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Center(
+        child: Text(country.flagEmoji, style: const TextStyle(fontSize: 80)),
+      ),
+    );
   }
 }

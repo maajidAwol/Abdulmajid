@@ -1,7 +1,7 @@
 class EndPoints {
   static const String baseUrl = "https://restcountries.com/v3.1/";
   static const String countriesUrl =
-      "independent?status=true&fields=name,population,flag,area,region,subregion,timezones";
+      "independent?status=true&fields=name,population,flags,flag,area,region,subregion,timezones";
 
   // Example endpoints - keeping original for reference
   static const String jsonPlaceholderBaseUrl =

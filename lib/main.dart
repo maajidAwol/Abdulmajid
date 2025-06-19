@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'core/injection/injection_container.dart' as di;
+import 'core/theme/app_theme.dart';
 import 'features/display_countries/presentation/bloc/countries_bloc.dart';
 import 'features/display_countries/presentation/screens/display_countries_screen.dart';
 import 'features/favorites/presentation/bloc/favorites_bloc.dart';
@@ -18,41 +19,31 @@ class CountriesApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Countries Explorer',
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
-        useMaterial3: true,
-        appBarTheme: const AppBarTheme(
-          backgroundColor: Colors.white,
-          foregroundColor: Colors.black87,
-          elevation: 0,
-        ),
-        cardTheme: CardTheme(
-          elevation: 2,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-        ),
-        bottomNavigationBarTheme: const BottomNavigationBarThemeData(
-          backgroundColor: Colors.white,
-          selectedItemColor: Colors.blue,
-          unselectedItemColor: Colors.grey,
-          elevation: 8,
-          type: BottomNavigationBarType.fixed,
-        ),
-      ),
-      home: MultiBlocProvider(
-        providers: [
-          BlocProvider<CountriesBloc>(
-            create: (_) => di.sl<CountriesBloc>()..add(GetCountriesEvent()),
-          ),
-          BlocProvider<FavoritesBloc>(
-            create: (_) => di.sl<FavoritesBloc>()..add(GetFavoritesEvent()),
-          ),
-        ],
-        child: const MainScreen(),
+    return BlocProvider(
+      create: (_) => ThemeCubit(),
+      child: BlocBuilder<ThemeCubit, ThemeMode>(
+        builder: (context, themeMode) {
+          return MaterialApp(
+            title: 'Countries Explorer',
+            debugShowCheckedModeBanner: false,
+            theme: AppTheme.lightTheme,
+            darkTheme: AppTheme.darkTheme,
+            themeMode: themeMode,
+            home: MultiBlocProvider(
+              providers: [
+                BlocProvider<CountriesBloc>(
+                  create:
+                      (_) => di.sl<CountriesBloc>()..add(GetCountriesEvent()),
+                ),
+                BlocProvider<FavoritesBloc>(
+                  create:
+                      (_) => di.sl<FavoritesBloc>()..add(GetFavoritesEvent()),
+                ),
+              ],
+              child: const MainScreen(),
+            ),
+          );
+        },
       ),
     );
   }
@@ -107,9 +98,9 @@ class _MainScreenState extends State<MainScreen> {
           },
           items: const [
             BottomNavigationBarItem(
-              icon: Icon(Icons.public),
-              activeIcon: Icon(Icons.public),
-              label: 'Countries',
+              icon: Icon(Icons.home),
+              activeIcon: Icon(Icons.home),
+              label: 'Home',
             ),
             BottomNavigationBarItem(
               icon: Icon(Icons.favorite_border),
