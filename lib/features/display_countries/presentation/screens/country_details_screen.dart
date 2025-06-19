@@ -29,10 +29,10 @@ class CountryDetailsScreen extends StatelessWidget {
               foregroundColor: Theme.of(context).appBarTheme.foregroundColor,
               title: Text(
                 country.name,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w600,
-                  color: Colors.black87,
+                  color: Theme.of(context).colorScheme.onSurface,
                 ),
               ),
               flexibleSpace: FlexibleSpaceBar(
@@ -42,8 +42,8 @@ class CountryDetailsScreen extends StatelessWidget {
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
                       colors: [
-                        const Color(0xFF00BCD4).withOpacity(0.1),
-                        Colors.white,
+                        Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                        Theme.of(context).scaffoldBackgroundColor,
                       ],
                     ),
                   ),
@@ -61,7 +61,9 @@ class CountryDetailsScreen extends StatelessWidget {
                             borderRadius: BorderRadius.circular(16),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withOpacity(0.2),
+                                color: Theme.of(
+                                  context,
+                                ).shadowColor.withOpacity(0.2),
                                 blurRadius: 20,
                                 offset: const Offset(0, 8),
                               ),
@@ -69,7 +71,7 @@ class CountryDetailsScreen extends StatelessWidget {
                           ),
                           child: ClipRRect(
                             borderRadius: BorderRadius.circular(16),
-                            child: _buildDetailFlag(),
+                            child: _buildDetailFlag(context),
                           ),
                         ),
                       ),
@@ -87,14 +89,16 @@ class CountryDetailsScreen extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     // Information Cards
-                    _buildInfoSection('Basic Information', [
+                    _buildInfoSection(context, 'Basic Information', [
                       _buildInfoCard(
+                        context,
                         icon: Icons.people,
                         title: 'Population',
                         value: _formatPopulation(country.population),
                         color: Colors.blue,
                       ),
                       _buildInfoCard(
+                        context,
                         icon: Icons.square_foot,
                         title: 'Area',
                         value: '${_formatArea(country.area)} km²',
@@ -104,14 +108,16 @@ class CountryDetailsScreen extends StatelessWidget {
 
                     const SizedBox(height: 24),
 
-                    _buildInfoSection('Location', [
+                    _buildInfoSection(context, 'Location', [
                       _buildInfoCard(
+                        context,
                         icon: Icons.public,
                         title: 'Region',
                         value: country.region,
                         color: Colors.orange,
                       ),
                       _buildInfoCard(
+                        context,
                         icon: Icons.location_on,
                         title: 'Subregion',
                         value:
@@ -125,7 +131,7 @@ class CountryDetailsScreen extends StatelessWidget {
                     const SizedBox(height: 24),
 
                     // Time Zones
-                    _buildTimeZonesSection(),
+                    _buildTimeZonesSection(context),
 
                     const SizedBox(height: 32),
                   ],
@@ -174,16 +180,20 @@ class CountryDetailsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildInfoSection(String title, List<Widget> cards) {
+  Widget _buildInfoSection(
+    BuildContext context,
+    String title,
+    List<Widget> cards,
+  ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           title,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.bold,
-            color: Colors.black87,
+            color: Theme.of(context).colorScheme.onSurface,
           ),
         ),
         const SizedBox(height: 12),
@@ -192,21 +202,24 @@ class CountryDetailsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildInfoCard({
+  Widget _buildInfoCard(
+    BuildContext context, {
     required IconData icon,
     required String title,
     required String value,
     required Color color,
   }) {
+    final theme = Theme.of(context);
+
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: theme.cardColor,
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: theme.shadowColor.withOpacity(0.05),
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),
@@ -232,17 +245,17 @@ class CountryDetailsScreen extends StatelessWidget {
                   title,
                   style: TextStyle(
                     fontSize: 14,
-                    color: Colors.grey[600],
+                    color: theme.colorScheme.onSurface.withOpacity(0.7),
                     fontWeight: FontWeight.w500,
                   ),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   value,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
-                    color: Colors.black87,
+                    color: theme.colorScheme.onSurface,
                   ),
                 ),
               ],
@@ -253,16 +266,18 @@ class CountryDetailsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildTimeZonesSection() {
+  Widget _buildTimeZonesSection(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           'Time Zones',
           style: TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.bold,
-            color: Colors.black87,
+            color: theme.colorScheme.onSurface,
           ),
         ),
         const SizedBox(height: 12),
@@ -270,11 +285,11 @@ class CountryDetailsScreen extends StatelessWidget {
           width: double.infinity,
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: theme.cardColor,
             borderRadius: BorderRadius.circular(12),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.05),
+                color: theme.shadowColor.withOpacity(0.05),
                 blurRadius: 10,
                 offset: const Offset(0, 2),
               ),
@@ -301,10 +316,10 @@ class CountryDetailsScreen extends StatelessWidget {
                   const SizedBox(width: 16),
                   Text(
                     '${country.timezones.length} Time Zone${country.timezones.length > 1 ? 's' : ''}',
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
-                      color: Colors.black87,
+                      color: theme.colorScheme.onSurface,
                     ),
                   ),
                 ],
@@ -318,14 +333,14 @@ class CountryDetailsScreen extends StatelessWidget {
                     vertical: 8,
                   ),
                   decoration: BoxDecoration(
-                    color: Colors.grey[100],
+                    color: theme.colorScheme.surfaceVariant.withOpacity(0.5),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
                     timezone,
                     style: TextStyle(
                       fontSize: 14,
-                      color: Colors.grey[700],
+                      color: theme.colorScheme.onSurface.withOpacity(0.8),
                       fontFamily: 'monospace',
                     ),
                   ),
@@ -358,7 +373,7 @@ class CountryDetailsScreen extends StatelessWidget {
     return area.toStringAsFixed(0);
   }
 
-  Widget _buildDetailFlag() {
+  Widget _buildDetailFlag(BuildContext context) {
     // Use real flag image with emoji fallback for details screen
     if (country.flagUrl.isNotEmpty) {
       return Image.network(
@@ -368,7 +383,7 @@ class CountryDetailsScreen extends StatelessWidget {
         fit: BoxFit.cover,
         errorBuilder: (context, error, stackTrace) {
           // Fallback to emoji if image fails to load
-          return _buildDetailEmojiFlag();
+          return _buildDetailEmojiFlag(context);
         },
         loadingBuilder: (context, child, loadingProgress) {
           if (loadingProgress == null) return child;
@@ -376,7 +391,7 @@ class CountryDetailsScreen extends StatelessWidget {
             width: 200,
             height: 140,
             decoration: BoxDecoration(
-              color: Colors.grey[200],
+              color: Theme.of(context).colorScheme.surfaceVariant,
               borderRadius: BorderRadius.circular(16),
             ),
             child: Center(
@@ -385,7 +400,9 @@ class CountryDetailsScreen extends StatelessWidget {
                 height: 40,
                 child: CircularProgressIndicator(
                   strokeWidth: 4,
-                  valueColor: AlwaysStoppedAnimation<Color>(Colors.grey[400]!),
+                  valueColor: AlwaysStoppedAnimation<Color>(
+                    Theme.of(context).colorScheme.primary,
+                  ),
                 ),
               ),
             ),
@@ -394,11 +411,11 @@ class CountryDetailsScreen extends StatelessWidget {
       );
     } else {
       // Fallback to emoji flag
-      return _buildDetailEmojiFlag();
+      return _buildDetailEmojiFlag(context);
     }
   }
 
-  Widget _buildDetailEmojiFlag() {
+  Widget _buildDetailEmojiFlag(BuildContext context) {
     return Container(
       width: 200,
       height: 140,
@@ -407,8 +424,8 @@ class CountryDetailsScreen extends StatelessWidget {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            const Color(0xFF00BCD4).withOpacity(0.2),
-            const Color(0xFF00BCD4).withOpacity(0.1),
+            Theme.of(context).colorScheme.primary.withOpacity(0.2),
+            Theme.of(context).colorScheme.primary.withOpacity(0.1),
           ],
         ),
         borderRadius: BorderRadius.circular(16),

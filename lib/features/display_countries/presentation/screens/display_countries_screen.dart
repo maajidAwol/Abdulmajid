@@ -37,41 +37,77 @@ class _DisplayCountriesViewState extends State<DisplayCountriesView> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final isDark = theme.brightness == Brightness.dark;
+
     return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      backgroundColor: theme.scaffoldBackgroundColor,
       body: SafeArea(
         child: Column(
           children: [
             // Header Section
             Container(
-              color: Colors.white,
+              color: theme.appBarTheme.backgroundColor,
               child: Column(
                 children: [
-                  // Title and Search
+                  // Title and Theme Toggle
                   Padding(
-                    padding: const EdgeInsets.fromLTRB(20, 20, 20, 16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.center,
+                    padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text(
+                        Text(
                           'Countries',
                           style: TextStyle(
                             fontSize: 24,
                             fontWeight: FontWeight.w700,
-                            color: Color(0xFF1A1A1A),
+                            color: colorScheme.onSurface,
                             height: 1.2,
                           ),
                         ),
-                        const SizedBox(height: 20),
-                        SearchWidget(
-                          controller: _searchController,
-                          onChanged: (query) {
-                            context.read<CountriesBloc>().add(
-                              SearchCountriesEvent(query),
-                            );
-                          },
+                        // Theme Toggle Button
+                        Container(
+                          height: 48,
+                          width: 48,
+                          decoration: BoxDecoration(
+                            color: colorScheme.primary.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: colorScheme.primary.withOpacity(0.2),
+                              width: 1,
+                            ),
+                          ),
+                          child: Material(
+                            color: Colors.transparent,
+                            child: InkWell(
+                              borderRadius: BorderRadius.circular(12),
+                              onTap: () {
+                                context.read<ThemeCubit>().toggleTheme();
+                              },
+                              child: Center(
+                                child: Icon(
+                                  isDark ? Icons.light_mode : Icons.dark_mode,
+                                  color: colorScheme.primary,
+                                  size: 22,
+                                ),
+                              ),
+                            ),
+                          ),
                         ),
                       ],
+                    ),
+                  ),
+                  // Search Widget
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
+                    child: SearchWidget(
+                      controller: _searchController,
+                      onChanged: (query) {
+                        context.read<CountriesBloc>().add(
+                          SearchCountriesEvent(query),
+                        );
+                      },
                     ),
                   ),
                   // Bottom shadow
@@ -82,7 +118,7 @@ class _DisplayCountriesViewState extends State<DisplayCountriesView> {
                         begin: Alignment.topCenter,
                         end: Alignment.bottomCenter,
                         colors: [
-                          Colors.black.withOpacity(0.1),
+                          colorScheme.outline.withOpacity(0.1),
                           Colors.transparent,
                         ],
                       ),
@@ -97,10 +133,10 @@ class _DisplayCountriesViewState extends State<DisplayCountriesView> {
               child: BlocBuilder<CountriesBloc, CountriesState>(
                 builder: (context, state) {
                   if (state is CountriesLoading) {
-                    return const Center(
+                    return Center(
                       child: CircularProgressIndicator(
                         valueColor: AlwaysStoppedAnimation<Color>(
-                          Color(0xFF2196F3),
+                          colorScheme.primary,
                         ),
                       ),
                     );
@@ -108,14 +144,14 @@ class _DisplayCountriesViewState extends State<DisplayCountriesView> {
                     final countries = state.filteredCountries;
 
                     if (countries.isEmpty) {
-                      return _buildEmptyState(state.searchQuery);
+                      return _buildEmptyState(state.searchQuery, colorScheme);
                     }
 
                     return RefreshIndicator(
                       onRefresh: () async {
                         context.read<CountriesBloc>().add(GetCountriesEvent());
                       },
-                      color: const Color(0xFF2196F3),
+                      color: colorScheme.primary,
                       child: ListView.builder(
                         padding: const EdgeInsets.fromLTRB(20, 16, 20, 100),
                         itemCount: countries.length,
@@ -130,6 +166,7 @@ class _DisplayCountriesViewState extends State<DisplayCountriesView> {
                       () => context.read<CountriesBloc>().add(
                         GetCountriesEvent(),
                       ),
+                      colorScheme,
                     );
                   }
 
@@ -143,7 +180,7 @@ class _DisplayCountriesViewState extends State<DisplayCountriesView> {
     );
   }
 
-  Widget _buildEmptyState(String searchQuery) {
+  Widget _buildEmptyState(String searchQuery, ColorScheme colorScheme) {
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(32),
@@ -154,13 +191,13 @@ class _DisplayCountriesViewState extends State<DisplayCountriesView> {
               width: 80,
               height: 80,
               decoration: BoxDecoration(
-                color: const Color(0xFFF5F5F5),
+                color: colorScheme.surfaceVariant,
                 borderRadius: BorderRadius.circular(40),
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.search_off,
                 size: 40,
-                color: Color(0xFF9E9E9E),
+                color: colorScheme.onSurfaceVariant,
               ),
             ),
             const SizedBox(height: 24),
@@ -168,20 +205,20 @@ class _DisplayCountriesViewState extends State<DisplayCountriesView> {
               searchQuery.isEmpty
                   ? 'No countries found'
                   : 'No countries found for "$searchQuery"',
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.w600,
-                color: Color(0xFF1A1A1A),
+                color: colorScheme.onSurface,
               ),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 8),
-            const Text(
+            Text(
               'Try searching with a different term',
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w400,
-                color: Color(0xFF666666),
+                color: colorScheme.onSurface.withOpacity(0.7),
               ),
               textAlign: TextAlign.center,
             ),
@@ -191,7 +228,11 @@ class _DisplayCountriesViewState extends State<DisplayCountriesView> {
     );
   }
 
-  Widget _buildErrorState(String message, VoidCallback onRetry) {
+  Widget _buildErrorState(
+    String message,
+    VoidCallback onRetry,
+    ColorScheme colorScheme,
+  ) {
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(32),
@@ -202,32 +243,32 @@ class _DisplayCountriesViewState extends State<DisplayCountriesView> {
               width: 80,
               height: 80,
               decoration: BoxDecoration(
-                color: const Color(0xFFFFEBEE),
+                color: colorScheme.errorContainer,
                 borderRadius: BorderRadius.circular(40),
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.error_outline,
                 size: 40,
-                color: Color(0xFFE53935),
+                color: colorScheme.error,
               ),
             ),
             const SizedBox(height: 24),
-            const Text(
+            Text(
               'Oops! Something went wrong',
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.w600,
-                color: Color(0xFF1A1A1A),
+                color: colorScheme.onSurface,
               ),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 8),
             Text(
               message,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w400,
-                color: Color(0xFF666666),
+                color: colorScheme.onSurface.withOpacity(0.7),
               ),
               textAlign: TextAlign.center,
             ),
@@ -235,8 +276,8 @@ class _DisplayCountriesViewState extends State<DisplayCountriesView> {
             ElevatedButton(
               onPressed: onRetry,
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF2196F3),
-                foregroundColor: Colors.white,
+                backgroundColor: colorScheme.primary,
+                foregroundColor: colorScheme.onPrimary,
                 elevation: 0,
                 padding: const EdgeInsets.symmetric(
                   horizontal: 32,
